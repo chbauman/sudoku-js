@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
   <head>
   <title>Sudoku JS</title>
@@ -28,7 +28,7 @@
 
       <div role="main" class="ui-content">
 
-        <h1>Sudoku JS</h1>
+        <h1>Sudoku JS Hoi</h1>
 
         <div class="table">
         <table id="grid"></table>
@@ -37,17 +37,19 @@
         <div class="table panel">
         <table id="digits">
             <tr>
-                <td id="digit-0" class="digit"></td>
+                <td id="digit-0" class="ion-backspace digit" ></td>
                 <td id="digit-1" class="digit">1</td>
                 <td id="digit-2" class="digit">2</td>
                 <td id="digit-3" class="digit">3</td>
                 <td id="digit-4" class="digit">4</td>
+                <td id="up-but" class="ion-android-arrow-up digit" onclick="enlarge();"></td>
             <tr>
                 <td id="digit-5" class="digit">5</td>
                 <td id="digit-6" class="digit">6</td>
                 <td id="digit-7" class="digit">7</td>
                 <td id="digit-8" class="digit">8</td>
                 <td id="digit-9" class="digit">9</td>
+                <td id="down-but" class="ion-android-arrow-down digit" onclick="shrink();"></td>
             </tr>
 
         </table>
@@ -65,6 +67,7 @@
                 <li class="ion-android-refresh" data-pack="android" onclick='$( "#restart" ).popup( "open" );'></li>
                 <li class="ion-code-working" data-pack="default" onclick='$( "#newGrid" ).popup( "open" );'></li>
                 <li class="ion-map" data-pack="default" onclick='$( "#help" ).popup( "open" );'></li>
+                <li class="ion-bookmark" id="show-log-button" onclick='$( "#log" ).popup( "open" );'></li>
             </ul>
         </div>
 
@@ -102,13 +105,19 @@
           </ul>
       </div>
 
+      <div data-role="popup" id ="log" class="ui-content"
+          data-theme="b" data-overlay-theme="b">
+          <h2>Log</h2>
+          <p id="log-txt"></p>
+      </div>
+
       <div data-role="popup" id ="help" class="ui-content"
           data-theme="b" data-overlay-theme="b">
           <h2>Help</h2>
           <p>Main symbols</p>
           <ul>
                 <li class="ion-fork-repo" data-pack="default"></li>
-                <li class="help">make an hypothesis</li>
+                <li class="help">make a hypothesis</li>
                 <li class="ion-pull-request" data-pack="default"></li>
                 <li class="help">validate hypothesis</li>
                 <li class="ion-android-close" data-pack="android"></li>

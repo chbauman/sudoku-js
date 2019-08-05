@@ -19,7 +19,16 @@ table {
 }
 
 #grid {
-    margin-top: 4px;
+    margin-top: 0px;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.innerTable {
+    width: 90%;
+    height: 90%;
+    margin: 0 auto;
+    display: table;
     border-collapse: collapse;
     border-spacing: 0;
 }
@@ -37,7 +46,17 @@ table {
     font-size: 120%;
     border: 1px dotted black;
     margin: 0;
-    padding: 4px;
+    padding: 0;
+}
+
+.subGridCell {
+    width: 0.5em;
+    height: 0.5em;
+    text-align: center;
+    font-weight: bold;
+    font-size: 50%;
+    /*border: 1px dotted black;*/
+    margin: 0;
 }
 
 .topBorder {
@@ -134,4 +153,10 @@ li {
     color: #FF6;
     padding-bottom: 6px;
     cursor: pointer;
+}
+#log {
+    font-size: 14px;
+    width: 460px;
+    text-align: left;
+    top: -8px;
 }

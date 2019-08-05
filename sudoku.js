@@ -3,14 +3,30 @@ var Tref = Array.from(new Array(9), () => new Array(9));
 var Tsol = Array.from(new Array(9), () => new Array(9).fill(0));
 var digits = new Array(10);
 var hyp = false;
-var hyps = []
+var hyps = [];
 //var coeff = [ 0, 1, 9, 81, 729, 6561, 59049, 531441, 4782969];
 
-var curX = 0;
+var TsubHTMLTables = Array.from(new Array(9), () => new Array(9));
+var TsubBinaryTables = Array.from(new Array(9), () => new Array(9));
+var TminiCells = Array.from(new Array(9), () => new Array(9));
+
+var DEBUG = true;
+
+var upBut, downBut;
+var large = true;
+
+var curX = -1;
 var curY = 0;
 
 var col1 = "#B00";
 var col2 = "#0A85FF";
+var lightH = "#DDD";
+var normH = "#BBB";
+
+// Appends the string: log as a new line to the log for debugging.
+function log(str) {
+    document.getElementById("log-txt").innerHTML += str + "<br />"
+}
 
 function shuffle(array) {
     let counter = array.length;
@@ -35,17 +51,64 @@ function randomOrderCells() {
     return shuffle(arr);
 }
 
+// Change digit input mode
+function toggleLargeSmall() {
+    but2 = large ? upBut : downBut;
+    but1 = !large ? upBut : downBut;
+    but1.style.color = col1;
+    but1.style.borderColor = col1;
+    but2.style.color = "black";
+    but2.style.borderColor = "black";
+    large = !large;
+}
+function enlarge() {
+    if (!large) {
+        toggleLargeSmall();
+        log("enlarged");
+    }
+}
+function shrink() {
+    if (large) {
+        toggleLargeSmall();
+        log("shrunken");
+    }
+}
+
 // Set cell (y,x) with value n   (0 for empty cell)
-function setCell(y, x, n) {
-    if (n==0) Tref[y][x].innerHTML = "";
-    else Tref[y][x].innerHTML = n.toString();
+function setCell(y, x, n, largeMode = true, overwrite = true) {
+    var i;
+    if (n == 0) {
+        if (true) {
+            // Remove all if only small digits present
+            Tref[y][x].innerHTML = "";
+            Tref[y][x].appendChild(TsubHTMLTables[y][x]);
+            for (i = 0; i < 9; i++) {
+                TminiCells[y][x][i].innerHTML = "";
+                TsubBinaryTables[y][x][i] = false;
+            }   
+        }
+    }
+    else {
+        if (largeMode) {
+            Tref[y][x].innerHTML = n.toString();
+        } else {
+            // Add small digit if not yet present, else remove it
+            var alreadySet = TsubBinaryTables[y][x][n - 1];
+            if (alreadySet) {
+                TminiCells[y][x][n - 1].innerHTML = "";
+            } else {
+                TminiCells[y][x][n - 1].innerHTML = n.toString();
+            }
+            TsubBinaryTables[y][x][n - 1] = !alreadySet;            
+        }        
+    }
 }
 
 function updateGrid() {
     var i,j;
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
-            setCell(i,j,T[i][j]);
+            setCell(i,j,T[i][j], true, false);
             Tref[i][j].style.color='';
             Tref[i][j].style.backgroundColor='';
         }
@@ -53,12 +116,12 @@ function updateGrid() {
 }
 
 function init() {
-    var i, j;
+    var i, j, k;
     var tbl = document.getElementById("grid");
-    for(i=0;i<9;i++) {
+    for (i = 0; i < 9; i++) {
         var r = tbl.insertRow(-1);
         r.className = "gridRow";
-        for(j=0;j<9;j++) {
+        for (j = 0; j < 9; j++) {
             Tref[i][j] = r.insertCell(-1);
             Tref[i][j].className = "gridCell";
             if (i%3 == 0) Tref[i][j].className += " topBorder";
@@ -74,16 +137,38 @@ function init() {
             Tref[i][j].setAttributeNode(y);
             Tref[i][j].setAttributeNode(x);
             Tref[i][j].setAttributeNode(click);
+
+            TminiCells[i][j] = new Array(9);
+            var subTab = document.createElement("table");
+            subTab.className = "innerTable";
+            var currRow;
+            var currCell;
+            for (k = 0; k < 9; k++) {
+                if (k % 3 == 0) {
+                    currRow = subTab.insertRow(-1);
+                    currRow.className = "gridRow";
+                }
+                currCell = currRow.insertCell(-1);
+                currCell.innerHTML = "";
+                currCell.className = "subGridCell"
+                TminiCells[i][j][k] = currCell;
+            }
+            Tref[i][j].appendChild(subTab);
+
+            TsubHTMLTables[i][j] = subTab;
+            TsubBinaryTables[i][j] = new Array(9).fill(0);
         }
     }
     // click on cells
-    $("#grid").on("click", "td", function(e) {
+    $("#grid").on("click", ".gridCell", function(e) {
         clickCell(this);
         e.stopPropagation();
     });
+
     // digits
     for(i=0;i<10;i++)
-        digits[i] = document.getElementById("digit-"+String(i));
+        digits[i] = document.getElementById("digit-" + String(i));
+
     // Buttons
     i = $('#digits').height();
     j = $('#buttons1').height();
@@ -93,12 +178,27 @@ function init() {
     document.getElementById("digits").style.display = "none";
     document.getElementById("but1").style.color="#000";
     document.getElementById("but2").style.color="#B8B8B8";
-    document.getElementById("but3").style.color="#B8B8B8";
+    document.getElementById("but3").style.color = "#B8B8B8";
 
-    setTimeout(function() { getRandomGrid(96); }, 250);
+    setTimeout(function () { getRandomGrid(96); }, 250);
+
+
+    // Remove log if not debugging
+    if (DEBUG == false) {
+        log("Not debugging!");
+        var element = document.getElementById("show-log-button");
+        element.parentNode.removeChild(element);
+    }
+
+    // Assign buttons
+    upBut = document.getElementById("up-but");
+    downBut = document.getElementById("down-but");
+    upBut.style.color = col1;
+    upBut.style.borderColor = col1;
+
 }
 
-function allowed(A, y,x) {
+function allowed(A, y, x) {
     var i;
     var res = [];
     var arr = new Array(10).fill(true); 
@@ -257,6 +357,7 @@ function _getRandomGrid2(nlevel) {
 }
 */
 
+// Das isch en Kommentar
 function _getRandomGrid(nlevel) {
     console.log(_getRandomGrid2(nlevel));
     updateGrid();
@@ -281,48 +382,97 @@ function getRandomGrid(nlevel) {
 }
 
 function elsewhere() {
-    Tref[curY][curX].style.backgroundColor = "";
-    document.getElementById("digits").style.display = "none";
-    document.getElementById("buttons1").style.display = "inline-block";
+    if (curX >= 0) {
+        //Tref[curY][curX].style.backgroundColor = "";
+        //log("i = " + curY.toString() + ", j = " + curX.toString() + " set to \"\" in elsewhere()");
+        curX = -1;
+    }    
+    log("elsewhere()")
+    //document.getElementById("digits").style.display = "none";
+    //document.getElementById("buttons1").style.display = "inline-block";
+}
+
+function highlight(y, x) {
+    log("highlighting")
+    var i, j;
+    for (i = 0; i < 9; i++) {
+        Tref[y][i].style.backgroundColor = lightH;
+        Tref[i][x].style.backgroundColor = lightH;    
+        for (j = 0; j < 9; j++) {
+            if (T[i][j] == T[y][x]) {
+                Tref[i][j].style.backgroundColor = lightH;    
+            }
+        }
+    }
+    Tref[y][x].style.backgroundColor = normH;   
+}
+
+function unhighlightAll() {
+    var i, j;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            Tref[i][j].style.backgroundColor = "";
+        }
+    }
 }
 
 function clickCell(cell) {
+    unhighlightAll();
     var c = Number(cell.getAttribute("clickable"));
-    if (c==1) {
-        var y = Number(cell.getAttribute("y"));
-        var x = Number(cell.getAttribute("x"));
-        Tref[curY][curX].style.backgroundColor = "";
-        $( "#digits" ).off("click", "**");
+    var y = Number(cell.getAttribute("y"));
+    var x = Number(cell.getAttribute("x"));
+    if (T[y][x] > 0) {
+        highlight(y, x);
+    }    
+    if (c == 1) {
+        if (false && curX >= 0) {
+            Tref[curY][curX].style.backgroundColor = "";
+            log("i = " + curY.toString() + ", j = " + curX.toString() + " set to \"\" in clickCell()");
+        }
+        $("#digits").off("click", "**");
         curY = y;
         curX = x;
         cell.style.backgroundColor = "#BBB";
+        log("i = " + curY.toString() + ", j = " + curX.toString() + " set to #BBB in clickCell()");
         document.getElementById("digits").style.display = "inline-block";
         document.getElementById("buttons1").style.display = "none";
+
+        // Enable all digits that are admissible
         var a = allowed(T, y, x);
         var d = new Array(10).fill(false);
-        for(i=0;i<a.length;i++) d[a[i]] = true;
+        for (i = 0; i < a.length; i++) d[a[i]] = true;
         d[0] = true;
-        for(i=0;i<10;i++) {
+        for (i = 0; i < 10; i++) {
             if (d[i]) {
                 let v = i;
-                let col = (hyp)?col2:col1;
+                let col = (hyp) ? col2 : col1;
                 let h = hyp;
-                digits[i].style.color=col;
-                digits[i].style.borderColor=col;
-                $("#digits").on("click", "#digit-"+String(i), function(e) {
-                    T[y][x] = v;
-                    setCell(y, x, v);
-                    Tref[y][x].style.color = col;
+                digits[i].style.color = col;
+                digits[i].style.borderColor = col;
+                $("#digits").on("click", "#digit-" + String(i), function (e) {
+                    if (large || v == 0) {
+                        T[y][x] = v;
+                        Tref[y][x].style.color = col;
+                    }
+                    setCell(y, x, v, large);
                     if (h) hyps.push(Tref[y][x]);
                     //e.stopPropagation();
                 });
             } else {
-                digits[i].style.color="#B8B8B8";
-                digits[i].style.borderColor="#B8B8B8";
-                digits[i].style.cursor="pointer";
+                digits[i].style.color = "#B8B8B8";
+                digits[i].style.borderColor = "#B8B8B8";
+                digits[i].style.cursor = "pointer";
             }
         }
-    } else elsewhere();
+    } else {
+        $("#digits").off("click", "**");
+        for (i = 0; i < 10; i++) {
+            digits[i].style.color = "#B8B8B8";
+            digits[i].style.borderColor = "#B8B8B8";
+            digits[i].style.cursor = "pointer";
+        }
+        elsewhere();
+    }
 }
 
 function hypothesis1() {
@@ -359,11 +509,13 @@ function hypothesis3() {
     document.getElementById("but3").style.color="#B8B8B8";
 }
 function restart() {
+    unhighlightAll();
     var i,j;
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
             if(Number(Tref[i][j].getAttribute("clickable")) == 1) {
                 T[i][j] = 0;
+                Tref[i][j].style.backgroundColor = "";
                 setCell(i,j,0);
             }
         }
@@ -400,10 +552,12 @@ function solve() {
     document.getElementById("but3").style.color="#B8B8B8";
 }
 function check() {
+    document.getElementById("log-txt").innerHTML += "Checking Sudoku: <br />";
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
             if ((T[i][j] != Tsol[i][j])&&(T[i][j] != 0)) {
                 Tref[i][j].style.backgroundColor = "#FBB";
+                document.getElementById("log-txt").innerHTML += "i = " + i.toString() + ", j = " + j.toString() + " set to #FBB in check()<br />";
             }
         }
     }
