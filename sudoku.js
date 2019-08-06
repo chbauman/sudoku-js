@@ -128,7 +128,7 @@ function setCell(y, x, n, largeMode = true, highlightCells = false) {
         Tref[y][x].appendChild(TsubHTMLTables[y][x]);
         for (i = 0; i < 9; i++) {
             resetMiniCell(y, x, i + 1);
-        }           
+        }
     }
     else {
         if (largeMode) {
@@ -542,19 +542,15 @@ function clickCell(cell) {
         for (i = 0; i < 10; i++) {
             if (d[i]) {
                 let v = i;
-                let col = (hyp) ? col2 : col1;
-                let h = hyp;
-                digits[i].style.color = col;
-                digits[i].style.borderColor = col;                
+                digits[i].style.color = col1;
+                digits[i].style.borderColor = col1;                
                 if (!choosingHyp || v == 0) {
                     $("#digits").on("click", "#digit-" + String(i), function (e) {
                         if (large || v == 0) {
                             T[y][x] = v;
-                            Tref[y][x].style.color = col;
+                            Tref[y][x].style.color = col1;
                         }
                         setCell(y, x, v, large, true);
-                        if (h) hyps.push(Tref[y][x]);
-                        //e.stopPropagation();
                     });
                 } else {
                     $("#digits").on("click", "#digit-" + String(i), function (e) {
@@ -626,10 +622,45 @@ function hypothesis1() {
     log("chH after hypothesis1: " + choosingHyp.toString());
 }
 function hypothesis3() {
-    var lastHyp = hyps[-1];
-    var y = lastHyp[0][0], x = lastHyp[0][1];
+    var nHyps = hyps.length;
+    var lastHyp = hyps[nHyps - 1];
+    
+    // Set fixed digits
+    if (nHyps < 2) {
+        T = Tinit;
+        updateGrid();
+        setClickableTrefT();
+    } else {
+        T = hyps[nHyps - 2][1];
+        updateGrid();
+        setClickableTrefT();
+        // TODO: Prev. Hyp
+        var y = hyps[nHyps - 2][0][0], x = hyps[nHyps - 2][0][1];
+        Tref[y][x].style.color = "#AAF";
+        Tref[y][x].setAttribute("clickable", 0);
+    }
+    // Current uncertain digits
     T = lastHyp[1];
-
+    TsubBinaryTables = lastHyp[2];
+    var i, j, k;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            if (T[i][j] > 0) {
+                setCell(i, j, T[i][j], true, false);
+                if (Tref[i][j].getAttribute("clickable") == 1) {
+                    Tref[i][j].style.color = col1;
+                }
+            } else {
+                for (k = 0; k < 9; k++) {
+                    if (TsubBinaryTables[i][j][k]) {
+                        setMiniCell(i, j, k + 1);
+                    }
+                }
+            }
+        }
+    }
+    // Remove rejected hypothesis
+    hyps.pop();
 }
 
 //function hypothesis1() {
@@ -670,11 +701,11 @@ function restart() {
     var i,j;
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
-            //if (Tref[i][j].getAttribute("clickable") == 1) {
             if (Tinit[i][j] == 0) {
                 Tref[i][j].setAttribute("clickable", 1);
                 T[i][j] = 0;
                 Tref[i][j].style.backgroundColor = "";
+                Tref[i][j].style.color = "";
                 setCell(i, j, 0);
             }
         }
