@@ -21,7 +21,10 @@ var curY = 0;
 var col1 = "#B00";
 var col2 = "#0A85FF";
 var veryLightH = "#EEE";
-var lightH = "#DDD";
+var smallDigCol = "#DFD";
+var rowColForbidCol = "#FDD";
+var sameDigCol = "#FBB";
+var lightH = "#FDD";
 var normH = "#BBB";
 
 // Appends the string: log as a new line to the log for debugging.
@@ -442,15 +445,18 @@ function highlight(y, x) {
     log("highlighting")
     var currDig = T[y][x];
     var i, j;
+    var xFloor = x - x % 3;
+    var yFloor = y - y % 3;
     for (i = 0; i < 9; i++) { 
-        Tref[y][i].style.backgroundColor = lightH;
-        Tref[i][x].style.backgroundColor = lightH;
+        Tref[y][i].style.backgroundColor = rowColForbidCol;
+        Tref[i][x].style.backgroundColor = rowColForbidCol;
+        Tref[yFloor + i % 3][xFloor + parseInt(i / 3)].style.backgroundColor = rowColForbidCol;
         for (j = 0; j < 9; j++) {
             if (T[i][j] == currDig) {
-                Tref[i][j].style.backgroundColor = lightH;    
+                Tref[i][j].style.backgroundColor = sameDigCol;    
             }
             if (T[i][j] == 0 && TsubBinaryTables[i][j][currDig - 1]) {
-                Tref[i][j].style.backgroundColor = veryLightH;  
+                Tref[i][j].style.backgroundColor = smallDigCol;  
             }
         }
     }
