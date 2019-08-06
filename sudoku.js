@@ -23,12 +23,12 @@ var curX = -1;
 var curY = 0;
 
 // Some Colors
-var col1 = "#B00";
-var col2 = "#0A85FF";
+var col1 = "#0A85FF";
 var veryLightH = "#EEE";
 var smallDigCol = "#DFD";
 var rowColSquareForbidCol = "#FDD";
 var sameDigCol = "#FBB";
+var hypCol = "#1aa3b8";
 var lightH = "#FDD";
 var normH = "#BBB";
 
@@ -175,6 +175,8 @@ function deepCopy3D(arr) {
 
 // Initializing function
 function init() {
+
+    solveSudoku(testHard);
     var i, j, k;
     var tbl = document.getElementById("grid");
     for (i = 0; i < 9; i++) {
@@ -561,7 +563,7 @@ function clickCell(cell) {
                         hyps.push(hypTuple);
                         setClickableTrefT();
                         T[y][x] = v;
-                        Tref[y][x].style.color = "#AAF";
+                        Tref[y][x].style.color = hypCol;
                         Tref[y][x].setAttribute("clickable", 0);
                         setCell(y, x, v, large, true);
                         finishedHypChoosing();
@@ -679,14 +681,6 @@ function hypothesis3() {
     }
 }
 
-//function hypothesis1() {
-//    if(!hyp) {
-//        document.getElementById("but1").style.color="#B8B8B8";
-//        document.getElementById("but2").style.color="#000";
-//        document.getElementById("but3").style.color="#000";
-//        hyp = true;
-//    }
-//}
 function hypothesis2() {
     var i;
     console.log(hyps);
@@ -697,21 +691,7 @@ function hypothesis2() {
     document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color="#B8B8B8";
 }
-//function hypothesis3() {
-//    var i;
-//    console.log(hyps);
-//    for(i=0;i<hyps.length;i++) {
-//        hyps[i].innerHTML = "";
-//        var y = Number(hyps[i].getAttribute("y"));
-//        var x = Number(hyps[i].getAttribute("x"));
-//        T[y][x] = 0;
-//    }
-//    hyps = []
-//    hyp = false;
-//    document.getElementById("but1").style.color="#000";
-//    document.getElementById("but2").style.color="#B8B8B8";
-//    document.getElementById("but3").style.color="#B8B8B8";
-////}
+
 function restart() {
     unhighlightAll();
     var i,j;
@@ -770,3 +750,328 @@ function check() {
         }
     }
 }
+
+
+
+// The above sudoku generator sucks, so this is my own (work in progress)
+
+function getSum(a, b) {
+    return a + b;
+}
+
+// Test Sudoku
+var testHard = [
+    [8, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 3, 6, 0, 0, 0, 0, 0],
+    [0, 7, 0, 0, 9, 0, 2, 0, 0],
+
+    [0, 5, 0, 0, 0, 7, 0, 0, 0],
+    [0, 0, 0, 0, 4, 5, 7, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 3, 0],
+
+    [0, 0, 1, 0, 0, 0, 0, 6, 8],
+    [0, 0, 8, 5, 0, 0, 0, 1, 0],
+    [0, 9, 0, 0, 0, 0, 4, 0, 0]
+];
+
+var testEasy = [
+    [0, 8, 0, 0, 3, 0, 0, 0, 2],
+    [7, 0, 0, 0, 5, 0, 9, 0, 0],
+    [0, 0, 9, 7, 6, 2, 0, 0, 8],
+
+    [0, 0, 0, 6, 0, 0, 5, 8, 0],
+    [0, 5, 0, 0, 0, 0, 0, 4, 0],
+    [0, 7, 4, 0, 0, 3, 0, 0, 0],
+
+    [3, 0, 0, 1, 4, 6, 7, 0, 0],
+    [0, 0, 7, 0, 9, 0, 0, 0, 3],
+    [1, 0, 0, 0, 7, 0, 0, 9, 0]
+];
+function logSudoku(sud) {
+    var i, j, k, n;
+    var lineStr = "";
+    for (i = 0; i < 9; i++) {
+        lineStr = "";
+        for (j = 0; j < 9; j++) {
+            lineStr += " " + sud[i][j];
+        }
+        log(lineStr);
+    }
+}
+// Returns: 0: no change, 1: found new number, -1: invalid
+function uniquePlaceInCol(sud, adm) {
+    var i, j, k, n;
+    var colOcc, colOccPos;
+    var res = 0;
+    // For each row/col/square i
+    for (i = 0; i < 9; i++) {
+        // For each number n
+        for (n = 0; n < 9; n++) {
+            colOcc = 0;
+            colOccPos = 0;
+            // For each cell in i      
+            for (j = 0; j < 9; j++) {
+                // Cols
+                if (sud[i][j] == n + 1) {
+                    // Number already set in this cell
+                    colOcc = -1;
+                    break;
+                } else if (sud[i][j] == 0) {
+                    // No number set in cell
+                    if (colOcc < 0) log("fuuuck");
+                    colOcc += adm[i][j][n];
+                    if (adm[i][j][n] == 1) {
+                        colOccPos = j;
+                    }                    
+                }
+            }            
+            if (colOcc == 0) {
+                // Nowhere to put the number
+                return -1;
+            } else if (colOcc == 1) {
+                // Found new number
+                sud[i][colOccPos] = n + 1;
+                res = 1;
+
+
+                //log("n = " + (n + 1).toString());
+                //log("colOccPos: " + colOccPos.toString());
+                //log("Admis: ");
+                //logSudoku(adm[i]);
+                //log("Modif Sud");
+                //logSudoku(sud);
+                return res;                
+            }
+        }
+    }
+    return res;
+}
+function uniquePlaceInRow(sud, adm) {
+    var i, j, k, n;
+    var colOcc, colOccPos;
+    var res = 0;
+    // For each row/col/square i
+    for (i = 0; i < 9; i++) {
+        // For each number n
+        for (n = 0; n < 9; n++) {
+            colOcc = 0;
+            colOccPos = 0;
+            // For each cell in i      
+            for (j = 0; j < 9; j++) {
+                // Cols
+                if (sud[j][i] == n + 1) {
+                    colOcc = -1;
+                    break;
+                } else if (sud[j][i] == 0) {                    
+                    colOcc += adm[j][i][n];
+                    if (adm[j][i][n] == 1) {
+                        colOccPos = j;
+                    }
+                }
+            }
+            if (colOcc == 0) {
+                // Nowhere to put the number
+                return -1;
+            } else if (colOcc == 1) {
+                // Found new number
+                sud[colOccPos][i] = n + 1;
+                res = 1;
+            }
+        }
+    }
+    return res;
+}
+function uniquePlaceInSquare(sud, adm) {
+    var i, j, k, n;
+    var ix, iy, jx, jy, i_n, j_n;
+    var colOcc, pos1, pos2;
+    var res = 0;
+    // For each row/col/square i
+    for (i = 0; i < 9; i++) {
+        ix = i % 3;
+        iy = Math.floor(i / 3);
+        // For each number n
+        for (n = 0; n < 9; n++) {
+            colOcc = 0;
+            colOccPos = 0;
+            // For each cell in i      
+            for (j = 0; j < 9; j++) {
+                jx = j % 3;
+                jy = Math.floor(j / 3);
+                i_n = ix * 3 + jx;
+                j_n = iy * 3 + jy;               
+                // Cols
+                if (sud[i_n][j_n] == n + 1) {
+                    colOcc = -1;
+                    break;
+                } else if (sud[i_n][j_n] == 0) {
+                    colOcc += adm[i_n][j_n][n];
+                    if (adm[i_n][j_n][n] == 1) {
+                        pos1 = i_n;
+                        pos2 = j_n;
+                    }
+                }
+            }
+            if (colOcc == 0) {
+                // Nowhere to put the number
+                return -1;
+            } else if (colOcc == 1) {
+                // Found new number
+                sud[pos1][pos2] = n + 1;
+                res = 1;
+            }
+        }
+    }
+    return res;
+}
+// Returns: 0: no change, 1: found new number, -1: invalid
+function uniqueNumberInCell(sud, adm) {
+    var i, j, k, n;
+    var numPoss;
+    var res = 0;
+    // For each cell (i, j)
+    for (i = 0; i < 9; i++) {   
+        for (j = 0; j < 9; j++) {
+            // For each number n
+            if (sud[i][j] == 0) {
+                numPoss = adm[i][j].reduce(getSum, 0);
+                //numPoss = Math.sum(...adm[i][j]);
+                if (numPoss == 1) {
+                    for (k = 0; k < 9; k++) {
+                        if (adm[i][j][k] == 1) {
+                            sud[i][j] = k + 1;
+                            adm[i][j][k] = 0;
+                        }
+                    }
+                    res = 1;
+                } else if (numPoss == 0) {
+                    return -1;
+                }
+            }            
+        }
+    }
+    return res;
+}
+// Basically the autofill
+function updateAdmissibility(sud, adm) {
+    var i, j;
+    var all, el;
+    // For each row/col/square i
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            adm[i][j] = new Array(9).fill(0);
+            all = allowed(sud, i, j);
+            for (el of all) {
+                adm[i][j][el - 1] = 1;
+            }
+        }
+    }
+}
+
+
+function applySolvingStep(currRes, sud, adm, stepFun) {
+    updateAdmissibility(sud, adm);
+    if (currRes == -1) return -1;
+    interRes = stepFun(sud, adm);
+    if (interRes == -1) return -1;
+    else return currRes + interRes;
+}
+
+// Use some easy techniques to find digits
+function trySolving(sud, admisArray) {
+    var res = 1;
+    while (res > 0) {
+        res = 0;
+        res = applySolvingStep(res, sud, admisArray, uniqueNumberInCell);
+        res = applySolvingStep(res, sud, admisArray, uniquePlaceInCol);
+        res = applySolvingStep(res, sud, admisArray, uniquePlaceInRow);
+        res = applySolvingStep(res, sud, admisArray, uniquePlaceInSquare);
+        if (res == -1) break;
+    }
+    return res;
+}
+
+function solveSudokuWithRecursiveGuessing(sud, admisArray) {
+    // Find cell with least possibilities
+    updateAdmissibility(sud, admisArray);
+    var minPoss = 9, currPoss;
+    var i, j, x = -1, y = -1;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            if (sud[i][j] == 0) {
+                currPoss = admisArray[i][j].reduce(getSum, 0);
+                if (currPoss < minPoss) {
+                    minPoss = currPoss;
+                    x = i;
+                    y = j;
+                }                
+            }
+        }
+    }
+    // Find all possible digits at that position    
+    var admXY = admisArray[x][y];
+    var admDigs = [];
+    for (i = 0; i < 9; i++) {
+        if (admXY[i] == 1) {
+            admDigs.push(i);
+        }
+    }
+    
+    // Try solving using all possibilities
+    var numSols = 0, res;
+    var numAdmDigs = admDigs.length;
+    var sudCopy, admCopy;
+    for (i = 0; i < numAdmDigs; i++) {
+        sudCopy = deepCopy2D(sud);
+        admCopy = deepCopy3D(admisArray);
+        sudCopy[x][y] = admDigs[i];
+        res = trySolving(sudCopy, admCopy);
+        log("SUDOKU");
+        logSudoku(sudCopy);
+        if (res == -1) continue;
+        if (checkSolved(sudCopy)) {
+            // Found valid solution
+            numSols += 1;
+        } else {
+            // Recursion here
+            log("RECURSIOOOOOOOONNNN");
+            console.log("RECURSIOOOOOOOONNNN");
+            numSols += solveSudokuWithRecursiveGuessing(sudCopy, admCopy, true);
+        }
+        if (numSols > 1) break;
+    }
+    sud = sudCopy;
+    admisArray = admCopy;
+    return numSols;
+}
+
+// Maybe not sufficient, checks if all digits are set
+function checkSolved(sud) {
+    var i, j;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            if (sud[i][j] == 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function solveSudoku(sud) {
+    var admisArray = Array.from(new Array(9), () => new Array(9));
+    var i, j, k, n;
+    // For each row/col/square i
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            admisArray[i][j] = new Array(9).fill(0);
+        }
+    }
+    var res = 0;
+    //res = solveSudokuWithRecursiveGuessing(sud, admisArray);
+    log("Sud:");
+    logSudoku(sud);
+    log("res: " + res.toString());
+}
+
+
