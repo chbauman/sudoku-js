@@ -217,6 +217,9 @@ function init() {
     setTimeout(function () { getRandomGrid(96); }, 250);
 
 
+    document.getElementById("digits").style.display = "inline-block";
+    document.getElementById("buttons1").style.display = "none";
+
     // Remove log if not debugging
     if (DEBUG == false) {
         log("Not debugging!");
@@ -490,8 +493,7 @@ function clickCell(cell) {
         curX = x;
         cell.style.backgroundColor = "#BBB";
         log("i = " + curY.toString() + ", j = " + curX.toString() + " set to #BBB in clickCell()");
-        document.getElementById("digits").style.display = "inline-block";
-        document.getElementById("buttons1").style.display = "none";
+
 
         // Enable all digits that are admissible
         var a = allowed(T, y, x);
