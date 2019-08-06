@@ -80,6 +80,11 @@ function resetMiniCell(y, x, n) {
     TminiCells[y][x][n - 1].innerHTML = "";
     TsubBinaryTables[y][x][n - 1] = false;
 }
+// Puts digit in mini cell
+function setMiniCell(y, x, n) {
+    TminiCells[y][x][n - 1].innerHTML = n.toString();
+    TsubBinaryTables[y][x][n - 1] = true;
+}
 // Add small digit if not yet present, else remove it
 function toggleMiniCell(y, x, n) {
     var alreadySet = TsubBinaryTables[y][x][n - 1];
@@ -417,6 +422,22 @@ function elsewhere() {
     //document.getElementById("buttons1").style.display = "inline-block";
 }
 
+function fillSmallDigits() {
+    var i, j, k;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            if (T[i][j] == 0) {
+                // Enable all digits that are admissible
+                var a = allowed(T, i, j);
+                for (k = 0; k < a.length; k++) {
+                    setMiniCell(i, j, a[k]);
+                }
+            }
+        }
+    }
+}
+
+// Highlight the current cell and all same numbers in grid
 function highlight(y, x) {
     log("highlighting")
     var currDig = T[y][x];
