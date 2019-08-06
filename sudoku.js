@@ -1,9 +1,12 @@
 var T = Array.from(new Array(9), () => new Array(9).fill(0));
 var Tref = Array.from(new Array(9), () => new Array(9));
 var Tsol = Array.from(new Array(9), () => new Array(9).fill(0));
+var Tinit = Array.from(new Array(9), () => new Array(9));
 var digits = new Array(10);
-var hyp = false;
+
+
 var hyps = [];
+var choosingHyp = false;
 //var coeff = [ 0, 1, 9, 81, 729, 6561, 59049, 531441, 4782969];
 
 var TsubHTMLTables = Array.from(new Array(9), () => new Array(9));
@@ -12,17 +15,19 @@ var TminiCells = Array.from(new Array(9), () => new Array(9));
 
 var DEBUG = true;
 
+// Input State Variables
 var upBut, downBut;
 var large = true;
 
 var curX = -1;
 var curY = 0;
 
+// Some Colors
 var col1 = "#B00";
 var col2 = "#0A85FF";
 var veryLightH = "#EEE";
 var smallDigCol = "#DFD";
-var rowColForbidCol = "#FDD";
+var rowColSquareForbidCol = "#FDD";
 var sameDigCol = "#FBB";
 var lightH = "#FDD";
 var normH = "#BBB";
@@ -148,6 +153,26 @@ function updateGrid() {
     }
 }
 
+// 2D and 3D array deep copy functions
+function deepCopy2D(arr) {
+    var arrLen = arr.length;
+    var newArr = new Array(arrLen);
+    var i;
+    for (i = 0; i < arrLen; i++) {
+        newArr[i] = arr[i].slice();            
+    }
+    return newArr;
+}
+function deepCopy3D(arr) {
+    var arrLen = arr.length;
+    var newArr = new Array(arrLen);
+    var i;
+    for (i = 0; i < arrLen; i++) {
+        newArr[i] = deepCopy2D(arr[i]);
+    }
+    return newArr;
+}
+
 // Initializing function
 function init() {
     var i, j, k;
@@ -216,7 +241,6 @@ function init() {
 
     setTimeout(function () { getRandomGrid(96); }, 250);
 
-
     document.getElementById("digits").style.display = "inline-block";
     document.getElementById("buttons1").style.display = "none";
 
@@ -233,6 +257,8 @@ function init() {
     upBut.style.color = col1;
     upBut.style.borderColor = col1;
 
+    // Save initial sudoku
+     
 }
 
 function allowed(A, y, x) {
@@ -344,6 +370,12 @@ function _getRandomGrid2(nlevel) {
             kept[j] = [y2, x2];
         }
     }
+
+    // Copy it to Tinit
+    Tinit = deepCopy2D(T);
+    for (i = 0; i < 9; i++) {
+        log("T = " + T[0][i].toString() + ", Tinit = " + Tinit[0][i].toString());
+    }   
     return sc;
 }
 
@@ -394,15 +426,22 @@ function _getRandomGrid2(nlevel) {
 }
 */
 
+function setClickableTrefT() {    
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            if (T[i][j] == 0) Tref[i][j].setAttribute("clickable", 1);
+            else {
+                Tref[i][j].setAttribute("clickable", 0);
+                Tref[i][j].style.color = '';
+            }
+        }
+    }
+}
+
 function _getRandomGrid(nlevel) {
     console.log(_getRandomGrid2(nlevel));
     updateGrid();
-    for(i=0;i<9;i++) {
-        for(j=0;j<9;j++) {
-            if (T[i][j] == 0) Tref[i][j].setAttribute("clickable", 1);
-            else Tref[i][j].setAttribute("clickable", 0);
-        }
-    }
+    setClickableTrefT();
     // make clickable
     $( "#waiting" ).popup( "close" )
     //$.mobile.loading().hide();
@@ -451,9 +490,9 @@ function highlight(y, x) {
     var xFloor = x - x % 3;
     var yFloor = y - y % 3;
     for (i = 0; i < 9; i++) { 
-        Tref[y][i].style.backgroundColor = rowColForbidCol;
-        Tref[i][x].style.backgroundColor = rowColForbidCol;
-        Tref[yFloor + i % 3][xFloor + parseInt(i / 3)].style.backgroundColor = rowColForbidCol;
+        Tref[y][i].style.backgroundColor = rowColSquareForbidCol;
+        Tref[i][x].style.backgroundColor = rowColSquareForbidCol;
+        Tref[yFloor + i % 3][xFloor + parseInt(i / 3)].style.backgroundColor = rowColSquareForbidCol;
         for (j = 0; j < 9; j++) {
             if (T[i][j] == currDig) {
                 Tref[i][j].style.backgroundColor = sameDigCol;    
@@ -493,7 +532,7 @@ function clickCell(cell) {
         curX = x;
         cell.style.backgroundColor = "#BBB";
         log("i = " + curY.toString() + ", j = " + curX.toString() + " set to #BBB in clickCell()");
-
+        log("chH in clickCell: " + choosingHyp.toString());
 
         // Enable all digits that are admissible
         var a = allowed(T, y, x);
@@ -506,16 +545,34 @@ function clickCell(cell) {
                 let col = (hyp) ? col2 : col1;
                 let h = hyp;
                 digits[i].style.color = col;
-                digits[i].style.borderColor = col;
-                $("#digits").on("click", "#digit-" + String(i), function (e) {
-                    if (large || v == 0) {
+                digits[i].style.borderColor = col;                
+                if (!choosingHyp || v == 0) {
+                    $("#digits").on("click", "#digit-" + String(i), function (e) {
+                        if (large || v == 0) {
+                            T[y][x] = v;
+                            Tref[y][x].style.color = col;
+                        }
+                        setCell(y, x, v, large, true);
+                        if (h) hyps.push(Tref[y][x]);
+                        //e.stopPropagation();
+                    });
+                } else {
+                    $("#digits").on("click", "#digit-" + String(i), function (e) {
+                        // Save current version
+                        var hypTuple = [[y, x], T, TsubBinaryTables];
+                        T = deepCopy2D(T);
+                        TsubBinaryTables = deepCopy3D(TsubBinaryTables);
+                        hyps.push(hypTuple);
+                        setClickableTrefT();
                         T[y][x] = v;
-                        Tref[y][x].style.color = col;
-                    }
-                    setCell(y, x, v, large, true);
-                    if (h) hyps.push(Tref[y][x]);
-                    //e.stopPropagation();
-                });
+                        Tref[y][x].style.color = "#AAF";
+                        Tref[y][x].setAttribute("clickable", 0);
+                        setCell(y, x, v, large, true);
+                        finishedHypChoosing();
+                        log("Saved current.");
+                    });
+                }
+                
             } else {
                 digits[i].style.color = "#B8B8B8";
                 digits[i].style.borderColor = "#B8B8B8";
@@ -533,14 +590,56 @@ function clickCell(cell) {
     }
 }
 
-function hypothesis1() {
-    if(!hyp) {
-        document.getElementById("but1").style.color="#B8B8B8";
-        document.getElementById("but2").style.color="#000";
-        document.getElementById("but3").style.color="#000";
-        hyp = true;
-    }
+// Enable shrink mode 
+function finishedHypChoosing() {
+    if (choosingHyp == false) return;
+    var down_but = document.getElementById("down-but");
+    var hyp_but = document.getElementById("but1");
+    down_but.onclick = shrink;
+    down_but.style.color = "";
+    down_but.style.borderColor = "";
+    hyp_but.style.color = "";
+    choosingHyp = false;
+    //log("chH after finishedHypChoosing: " + choosingHyp.toString());
 }
+
+// Start choosing hypothesis digit
+function hypothesis1() {
+    if (!choosingHyp) {
+        // Choose hypothesis digit
+        enlarge();
+        var down_but = document.getElementById("down-but");
+        var hyp_but = document.getElementById("but1");
+        hyp_but.style.color = "#F00";
+        down_but.onclick = null;
+        down_but.style.color = "#B8B8B8";
+        down_but.style.borderColor = "#B8B8B8";
+        down_but.style.cursor = "pointer";
+        choosingHyp = true;
+        if (curX >= 0) {
+            clickCell(Tref[curY][curX]);
+        }        
+    } else {
+        // Cancel choosing a hypothesis digit
+        finishedHypChoosing();
+    }
+    log("chH after hypothesis1: " + choosingHyp.toString());
+}
+function hypothesis3() {
+    var lastHyp = hyps[-1];
+    var y = lastHyp[0][0], x = lastHyp[0][1];
+    T = lastHyp[1];
+
+}
+
+//function hypothesis1() {
+//    if(!hyp) {
+//        document.getElementById("but1").style.color="#B8B8B8";
+//        document.getElementById("but2").style.color="#000";
+//        document.getElementById("but3").style.color="#000";
+//        hyp = true;
+//    }
+//}
 function hypothesis2() {
     var i;
     console.log(hyps);
@@ -551,30 +650,32 @@ function hypothesis2() {
     document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color="#B8B8B8";
 }
-function hypothesis3() {
-    var i;
-    console.log(hyps);
-    for(i=0;i<hyps.length;i++) {
-        hyps[i].innerHTML = "";
-        var y = Number(hyps[i].getAttribute("y"));
-        var x = Number(hyps[i].getAttribute("x"));
-        T[y][x] = 0;
-    }
-    hyps = []
-    hyp = false;
-    document.getElementById("but1").style.color="#000";
-    document.getElementById("but2").style.color="#B8B8B8";
-    document.getElementById("but3").style.color="#B8B8B8";
-}
+//function hypothesis3() {
+//    var i;
+//    console.log(hyps);
+//    for(i=0;i<hyps.length;i++) {
+//        hyps[i].innerHTML = "";
+//        var y = Number(hyps[i].getAttribute("y"));
+//        var x = Number(hyps[i].getAttribute("x"));
+//        T[y][x] = 0;
+//    }
+//    hyps = []
+//    hyp = false;
+//    document.getElementById("but1").style.color="#000";
+//    document.getElementById("but2").style.color="#B8B8B8";
+//    document.getElementById("but3").style.color="#B8B8B8";
+////}
 function restart() {
     unhighlightAll();
     var i,j;
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
-            if(Number(Tref[i][j].getAttribute("clickable")) == 1) {
+            //if (Tref[i][j].getAttribute("clickable") == 1) {
+            if (Tinit[i][j] == 0) {
+                Tref[i][j].setAttribute("clickable", 1);
                 T[i][j] = 0;
                 Tref[i][j].style.backgroundColor = "";
-                setCell(i,j,0);
+                setCell(i, j, 0);
             }
         }
     }
