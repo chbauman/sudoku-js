@@ -20,6 +20,7 @@ var curY = 0;
 
 var col1 = "#B00";
 var col2 = "#0A85FF";
+var veryLightH = "#EEE";
 var lightH = "#DDD";
 var normH = "#BBB";
 
@@ -127,6 +128,7 @@ function setCell(y, x, n, largeMode = true, highlightCells = false) {
     }
 }
 
+// Sets layout according to T
 function updateGrid() {
     var i,j;
     for(i=0;i<9;i++) {
@@ -138,6 +140,7 @@ function updateGrid() {
     }
 }
 
+// Initializing function
 function init() {
     var i, j, k;
     var tbl = document.getElementById("grid");
@@ -179,7 +182,7 @@ function init() {
             Tref[i][j].appendChild(subTab);
 
             TsubHTMLTables[i][j] = subTab;
-            TsubBinaryTables[i][j] = new Array(9).fill(0);
+            TsubBinaryTables[i][j] = new Array(9).fill(false);
         }
     }
     // click on cells
@@ -380,7 +383,6 @@ function _getRandomGrid2(nlevel) {
 }
 */
 
-// Das isch en Kommentar
 function _getRandomGrid(nlevel) {
     console.log(_getRandomGrid2(nlevel));
     updateGrid();
@@ -417,13 +419,17 @@ function elsewhere() {
 
 function highlight(y, x) {
     log("highlighting")
+    var currDig = T[y][x];
     var i, j;
-    for (i = 0; i < 9; i++) {
+    for (i = 0; i < 9; i++) { 
         Tref[y][i].style.backgroundColor = lightH;
-        Tref[i][x].style.backgroundColor = lightH;    
+        Tref[i][x].style.backgroundColor = lightH;
         for (j = 0; j < 9; j++) {
-            if (T[i][j] == T[y][x]) {
+            if (T[i][j] == currDig) {
                 Tref[i][j].style.backgroundColor = lightH;    
+            }
+            if (T[i][j] == 0 && TsubBinaryTables[i][j][currDig - 1]) {
+                Tref[i][j].style.backgroundColor = veryLightH;  
             }
         }
     }
