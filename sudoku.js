@@ -74,6 +74,22 @@ function shrink() {
     }
 }
 
+// Removes digit in mini cell
+function resetMiniCell(y, x, n) {
+    TminiCells[y][x][n - 1].innerHTML = "";
+    TsubBinaryTables[y][x][n - 1] = false;
+}
+// Add small digit if not yet present, else remove it
+function toggleMiniCell(y, x, n) {
+    var alreadySet = TsubBinaryTables[y][x][n - 1];
+    if (alreadySet) {
+        TminiCells[y][x][n - 1].innerHTML = "";
+    } else {
+        TminiCells[y][x][n - 1].innerHTML = n.toString();
+    }
+    TsubBinaryTables[y][x][n - 1] = !alreadySet;   
+}
+
 // Removes small digits that become inadmissible after setting
 // (y, x) to n.
 function eliminateSmallDigs(y, x, n){
@@ -82,17 +98,14 @@ function eliminateSmallDigs(y, x, n){
     var yFloor = y - y % 3;
     for (i = 0; i < 9; i++) {
         // Rows and Cols
-        TminiCells[y][i][n - 1].innerHTML = "";
-        TsubBinaryTables[y][i][n - 1] = false;
-        TminiCells[i][x][n - 1].innerHTML = "";
-        TsubBinaryTables[i][x][n - 1] = false;
+        resetMiniCell(y, i, n);
+        resetMiniCell(i, x, n);
         // Square
-        TminiCells[yFloor + i % 3][xFloor + parseInt(i / 3)][n - 1].innerHTML = "";
-        TsubBinaryTables[yFloor + i % 3][xFloor + parseInt(i / 3)][n - 1] = false;
+        resetMiniCell(yFloor + i % 3, xFloor + parseInt(i / 3), n);
     }
 }
 
-// Set cell (y,x) with value n (0 for empty cell)
+// Set cell (y, x) with value n (0 for empty cell)
 function setCell(y, x, n, largeMode = true, overwrite = true) {
     var i;
     if (n == 0) {        
@@ -100,23 +113,15 @@ function setCell(y, x, n, largeMode = true, overwrite = true) {
         Tref[y][x].innerHTML = "";
         Tref[y][x].appendChild(TsubHTMLTables[y][x]);
         for (i = 0; i < 9; i++) {
-            TminiCells[y][x][i].innerHTML = "";
-            TsubBinaryTables[y][x][i] = false;
+            resetMiniCell(y, x, i + 1);
         }           
     }
     else {
         if (largeMode) {
             Tref[y][x].innerHTML = n.toString();
             eliminateSmallDigs(y, x, n);
-        } else {
-            // Add small digit if not yet present, else remove it
-            var alreadySet = TsubBinaryTables[y][x][n - 1];
-            if (alreadySet) {
-                TminiCells[y][x][n - 1].innerHTML = "";
-            } else {
-                TminiCells[y][x][n - 1].innerHTML = n.toString();
-            }
-            TsubBinaryTables[y][x][n - 1] = !alreadySet;            
+        } else {            
+            toggleMiniCell(y, x, n);      
         }        
     }
 }
@@ -568,13 +573,15 @@ function solve() {
     document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color="#B8B8B8";
 }
+// Checks if any input digits are wrong and sets their background to
+// red.
 function check() {
-    document.getElementById("log-txt").innerHTML += "Checking Sudoku: <br />";
+    log("Checking Sudoku: ");
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
             if ((T[i][j] != Tsol[i][j])&&(T[i][j] != 0)) {
                 Tref[i][j].style.backgroundColor = "#FBB";
-                document.getElementById("log-txt").innerHTML += "i = " + i.toString() + ", j = " + j.toString() + " set to #FBB in check()<br />";
+                log("i = " + i.toString() + ", j = " + j.toString() + " set to #FBB in check()");
             }
         }
     }
