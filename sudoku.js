@@ -74,23 +74,40 @@ function shrink() {
     }
 }
 
-// Set cell (y,x) with value n   (0 for empty cell)
+// Removes small digits that become inadmissible after setting
+// (y, x) to n.
+function eliminateSmallDigs(y, x, n){
+    var i;
+    var xFloor = x - x % 3;
+    var yFloor = y - y % 3;
+    for (i = 0; i < 9; i++) {
+        // Rows and Cols
+        TminiCells[y][i][n - 1].innerHTML = "";
+        TsubBinaryTables[y][i][n - 1] = false;
+        TminiCells[i][x][n - 1].innerHTML = "";
+        TsubBinaryTables[i][x][n - 1] = false;
+        // Square
+        TminiCells[yFloor + i % 3][xFloor + parseInt(i / 3)][n - 1].innerHTML = "";
+        TsubBinaryTables[yFloor + i % 3][xFloor + parseInt(i / 3)][n - 1] = false;
+    }
+}
+
+// Set cell (y,x) with value n (0 for empty cell)
 function setCell(y, x, n, largeMode = true, overwrite = true) {
     var i;
-    if (n == 0) {
-        if (true) {
-            // Remove all if only small digits present
-            Tref[y][x].innerHTML = "";
-            Tref[y][x].appendChild(TsubHTMLTables[y][x]);
-            for (i = 0; i < 9; i++) {
-                TminiCells[y][x][i].innerHTML = "";
-                TsubBinaryTables[y][x][i] = false;
-            }   
-        }
+    if (n == 0) {        
+        // Remove all if only small digits present
+        Tref[y][x].innerHTML = "";
+        Tref[y][x].appendChild(TsubHTMLTables[y][x]);
+        for (i = 0; i < 9; i++) {
+            TminiCells[y][x][i].innerHTML = "";
+            TsubBinaryTables[y][x][i] = false;
+        }           
     }
     else {
         if (largeMode) {
             Tref[y][x].innerHTML = n.toString();
+            eliminateSmallDigs(y, x, n);
         } else {
             // Add small digit if not yet present, else remove it
             var alreadySet = TsubBinaryTables[y][x][n - 1];
