@@ -106,7 +106,7 @@ function eliminateSmallDigs(y, x, n){
 }
 
 // Set cell (y, x) with value n (0 for empty cell)
-function setCell(y, x, n, largeMode = true, overwrite = true) {
+function setCell(y, x, n, largeMode = true, highlightCells = false) {
     var i;
     if (n == 0) {        
         // Remove all if only small digits present
@@ -120,6 +120,7 @@ function setCell(y, x, n, largeMode = true, overwrite = true) {
         if (largeMode) {
             Tref[y][x].innerHTML = n.toString();
             eliminateSmallDigs(y, x, n);
+            if (highlightCells) highlight(y, x);
         } else {            
             toggleMiniCell(y, x, n);      
         }        
@@ -476,7 +477,7 @@ function clickCell(cell) {
                         T[y][x] = v;
                         Tref[y][x].style.color = col;
                     }
-                    setCell(y, x, v, large);
+                    setCell(y, x, v, large, true);
                     if (h) hyps.push(Tref[y][x]);
                     //e.stopPropagation();
                 });
