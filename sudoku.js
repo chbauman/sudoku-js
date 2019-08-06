@@ -754,7 +754,7 @@ function check() {
 
 
 // The above sudoku generator sucks, so this is my own (work in progress)
-
+// This one does not work well. 
 function getSum(a, b) {
     return a + b;
 }
@@ -773,7 +773,6 @@ var testHard = [
     [0, 0, 8, 5, 0, 0, 0, 1, 0],
     [0, 9, 0, 0, 0, 0, 4, 0, 0]
 ];
-
 var testEasy = [
     [0, 8, 0, 0, 3, 0, 0, 0, 2],
     [7, 0, 0, 0, 5, 0, 9, 0, 0],
@@ -787,6 +786,7 @@ var testEasy = [
     [0, 0, 7, 0, 9, 0, 0, 0, 3],
     [1, 0, 0, 0, 7, 0, 0, 9, 0]
 ];
+
 function logSudoku(sud) {
     var i, j, k, n;
     var lineStr = "";
