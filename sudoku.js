@@ -565,6 +565,7 @@ function clickCell(cell) {
                         Tref[y][x].setAttribute("clickable", 0);
                         setCell(y, x, v, large, true);
                         finishedHypChoosing();
+                        enableHypRejection();
                         log("Saved current.");
                     });
                 }
@@ -597,6 +598,18 @@ function finishedHypChoosing() {
     hyp_but.style.color = "";
     choosingHyp = false;
     //log("chH after finishedHypChoosing: " + choosingHyp.toString());
+}
+
+// Enable / disable the hypothesis rejection button
+function enableHypRejection() {
+    var rejBut = document.getElementById("but3");
+    rejBut.style.color = "#000";
+    rejBut.onclick = hypothesis3;
+}
+function disableHypRejection() {
+    var rejBut = document.getElementById("but3");
+    rejBut.style.color = "#B8B8B8";
+    rejBut.onclick = null;
 }
 
 // Start choosing hypothesis digit
@@ -661,6 +674,9 @@ function hypothesis3() {
     }
     // Remove rejected hypothesis
     hyps.pop();
+    if (nHyps == 1) {
+        disableHypRejection();
+    }
 }
 
 //function hypothesis1() {
