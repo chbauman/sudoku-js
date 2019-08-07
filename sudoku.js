@@ -13,7 +13,7 @@ var TsubHTMLTables = Array.from(new Array(9), () => new Array(9));
 var TsubBinaryTables = Array.from(new Array(9), () => new Array(9));
 var TminiCells = Array.from(new Array(9), () => new Array(9));
 
-var DEBUG = true;
+var DEBUG = false;
 
 // Input State Variables
 var upBut, downBut;
@@ -238,7 +238,7 @@ function init() {
     $('#buttons1').css("margin-top", String(j)+"px");
     document.getElementById("digits").style.display = "none";
     document.getElementById("but1").style.color="#000";
-    document.getElementById("but2").style.color="#B8B8B8";
+    //document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color = "#B8B8B8";
 
     setTimeout(function () { getRandomGrid(96); }, 250);
@@ -449,7 +449,7 @@ function _getRandomGrid(nlevel) {
     //$.mobile.loading().hide();
     hyp = false;
     document.getElementById("but1").style.color="#000";
-    document.getElementById("but2").style.color="#B8B8B8";
+    //document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color="#B8B8B8";
 }
 function getRandomGrid(nlevel) {
@@ -465,8 +465,6 @@ function elsewhere() {
         curX = -1;
     }    
     log("elsewhere()")
-    //document.getElementById("digits").style.display = "none";
-    //document.getElementById("buttons1").style.display = "inline-block";
 }
 
 function fillSmallDigits() {
