@@ -706,7 +706,7 @@ function restart() {
     }
     hyp = false;
     document.getElementById("but1").style.color="#000";
-    document.getElementById("but2").style.color="#B8B8B8";
+    //document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color="#B8B8B8";
 
 }
@@ -732,7 +732,7 @@ function solve() {
     }
     hyp = false;
     document.getElementById("but1").style.color="#000";
-    document.getElementById("but2").style.color="#B8B8B8";
+    //document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color="#B8B8B8";
 }
 // Checks if any input digits are wrong and sets their background to
