@@ -4,16 +4,20 @@ var Tsol = Array.from(new Array(9), () => new Array(9).fill(0));
 var Tinit = Array.from(new Array(9), () => new Array(9));
 var digits = new Array(10);
 
-
+// Hypotheses
 var hyps = [];
 var choosingHyp = false;
 //var coeff = [ 0, 1, 9, 81, 729, 6561, 59049, 531441, 4782969];
 
+// Pencil marks
 var TsubHTMLTables = Array.from(new Array(9), () => new Array(9));
 var TsubBinaryTables = Array.from(new Array(9), () => new Array(9));
 var TminiCells = Array.from(new Array(9), () => new Array(9));
 
-var DEBUG = false;
+var DEBUG = true;
+
+var sol_available = false;
+var inputtingOwnSud = false;
 
 // Input State Variables
 var upBut, downBut;
@@ -176,7 +180,7 @@ function deepCopy3D(arr) {
 // Initializing function
 function init() {
 
-    solveSudoku(testHard);
+    //solveSudoku(testHard);
     var i, j, k;
     var tbl = document.getElementById("grid");
     for (i = 0; i < 9; i++) {
@@ -453,7 +457,8 @@ function _getRandomGrid(nlevel) {
     document.getElementById("but3").style.color="#B8B8B8";
 }
 function getRandomGrid(nlevel) {
-    $( "#waiting" ).popup( "open" )
+    $("#waiting").popup("open")
+    if (!sol_available) sol_available = true;
     //$.mobile.loading().show();
     setTimeout(function() { _getRandomGrid(nlevel); }, 0);
 }
@@ -464,7 +469,6 @@ function elsewhere() {
         //log("i = " + curY.toString() + ", j = " + curX.toString() + " set to \"\" in elsewhere()");
         curX = -1;
     }    
-    log("elsewhere()")
 }
 
 function fillSmallDigits() {
@@ -590,14 +594,10 @@ function clickCell(cell) {
 // Enable shrink mode 
 function finishedHypChoosing() {
     if (choosingHyp == false) return;
-    var down_but = document.getElementById("down-but");
+    enableSmallDigs();
     var hyp_but = document.getElementById("but1");
-    down_but.onclick = shrink;
-    down_but.style.color = "";
-    down_but.style.borderColor = "";
     hyp_but.style.color = "";
     choosingHyp = false;
-    //log("chH after finishedHypChoosing: " + choosingHyp.toString());
 }
 
 // Enable / disable the hypothesis rejection button
@@ -611,19 +611,29 @@ function disableHypRejection() {
     rejBut.style.color = "#B8B8B8";
     rejBut.onclick = null;
 }
+function disableSmallDigs() {
+    log("Disabled down button")
+    enlarge();
+    var down_but = document.getElementById("down-but");
+    down_but.onclick = null;
+    down_but.style.color = "#B8B8B8";
+    down_but.style.borderColor = "#B8B8B8";
+    down_but.style.cursor = "pointer";
+}
+function enableSmallDigs() {
+    var down_but = document.getElementById("down-but");
+    down_but.onclick = shrink;
+    down_but.style.color = "";
+    down_but.style.borderColor = "";
+}
 
 // Start choosing hypothesis digit
 function hypothesis1() {
     if (!choosingHyp) {
         // Choose hypothesis digit
-        enlarge();
-        var down_but = document.getElementById("down-but");
+        disableSmallDigs()
         var hyp_but = document.getElementById("but1");
         hyp_but.style.color = "#F00";
-        down_but.onclick = null;
-        down_but.style.color = "#B8B8B8";
-        down_but.style.borderColor = "#B8B8B8";
-        down_but.style.cursor = "pointer";
         choosingHyp = true;
         if (curX >= 0) {
             clickCell(Tref[curY][curX]);
@@ -679,6 +689,45 @@ function hypothesis3() {
     }
 }
 
+function input_own_sudoku() {
+    
+    if (!inputtingOwnSud) {
+        log("Own Input")
+
+        // Toggle State and Button color
+        inputtingOwnSud = true;
+        sol_available = false;
+        var own_but = document.getElementById("own_sud");
+        own_but.style.color = "#F00";
+
+        // Remove current sudoku
+        var i, j, k;
+        for (i = 0; i < 9; i++) {
+            for (j = 0; j < 9; j++) {
+                T[i][j] = 0;
+                setCell(i, j, 0, true, false);
+                Tref[i][j].style.color = '';
+                Tref[i][j].style.backgroundColor = '';
+                Tref[i][j].setAttribute("clickable", 1);
+            }
+        }
+        disableSmallDigs();
+
+    } else {
+        log("Done inputting own sudoku!")
+
+        // Toggle State
+        inputtingOwnSud = false;
+        var own_but = document.getElementById("own_sud");
+        own_but.style.color = "";
+
+        // Activate small numbers and set set numbers to unclickable
+        Tinit = deepCopy2D(T);
+        setClickableTrefT();
+        enableSmallDigs();
+    }
+}
+
 function hypothesis2() {
     var i;
     console.log(hyps);
@@ -710,12 +759,13 @@ function restart() {
     document.getElementById("but3").style.color="#B8B8B8";
 
 }
-function newRandomGrid(nlevel) {
+function newRandomGrid(nlevel) {    
     $( "#newGrid" ).popup( "close" );
     setTimeout(function() { getRandomGrid(nlevel); }, 250);
 }
 
 function solve() {
+    if (sol_available == false) return;
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
             if (T[i][j]==0) {
@@ -738,6 +788,7 @@ function solve() {
 // Checks if any input digits are wrong and sets their background to
 // red.
 function check() {
+    if (sol_available == false) return;
     log("Checking Sudoku: ");
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
@@ -752,7 +803,9 @@ function check() {
 
 
 // The above sudoku generator sucks, so this is my own (work in progress)
-// This one does not work well. 
+// This one does not work well though.
+
+
 function getSum(a, b) {
     return a + b;
 }
