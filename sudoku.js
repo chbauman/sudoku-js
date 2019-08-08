@@ -14,7 +14,7 @@ var TsubHTMLTables = Array.from(new Array(9), () => new Array(9));
 var TsubBinaryTables = Array.from(new Array(9), () => new Array(9));
 var TminiCells = Array.from(new Array(9), () => new Array(9));
 
-var DEBUG = true;
+var DEBUG = false;
 
 var sol_available = false;
 var inputtingOwnSud = false;
