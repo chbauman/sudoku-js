@@ -764,6 +764,19 @@ function newRandomGrid(nlevel) {
     setTimeout(function() { getRandomGrid(nlevel); }, 250);
 }
 
+function loadRandomSud(lvl = 7) {
+
+    console.log("Trying to load file");
+    var items;
+    $.get("./data/ext_lvl_7.txt", function (data) {
+        items = data.split('\n');
+    });
+    var n_s = items.length;
+    console.log(n_s);
+    console.log("Finished loading file");
+
+}
+
 function solve() {
     if (sol_available == false) return;
     for(i=0;i<9;i++) {
