@@ -750,6 +750,10 @@ function set_sud_from_str(ret_sud) {
 // Reads a random sudoku from the file and loads it.
 function loadRandomSud(lvl = 7) {
 
+    if (inputtingOwnSud) {
+        input_own_sudoku();
+    }
+
     console.log("Trying to load fucking file");
     var f_name = "./data/ext_lvl_" + lvl.toString() + ".txt";
     console.log(f_name);
@@ -757,7 +761,7 @@ function loadRandomSud(lvl = 7) {
         .then(response => response.text())
         .then((data) => {
             var items = data.split("\n");
-            var n_s = items.length;
+            var n_s = items.length - 1;
             let s_ind = Math.floor(Math.random() * n_s);
             let sud_str = items[s_ind];
             console.log(sud_str);
