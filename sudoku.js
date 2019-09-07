@@ -32,7 +32,7 @@ var veryLightH = "#EEE";
 var smallDigCol = "#DFD";
 var rowColSquareForbidCol = "#FDD";
 var sameDigCol = "#FBB";
-var hypCol = "#1aa3b8";
+var hypCol = "#0C5";
 var lightH = "#FDD";
 var normH = "#BBB";
 
@@ -484,6 +484,7 @@ function fillSmallDigits() {
             }
         }
     }
+    unhighlightAll();
 }
 
 // Highlight the current cell and all same numbers in grid
