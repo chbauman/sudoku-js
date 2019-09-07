@@ -613,7 +613,7 @@ function hypothesis3() {
         setClickableTrefT();
         // TODO: Prev. Hyp
         var y = hyps[nHyps - 2][0][0], x = hyps[nHyps - 2][0][1];
-        Tref[y][x].style.color = "#AAF";
+        Tref[y][x].style.color = hypCol;
         Tref[y][x].setAttribute("clickable", 0);
     }
     // Current uncertain digits
@@ -718,19 +718,52 @@ function newRandomGrid(nlevel) {
     setTimeout(function() { getRandomGrid(nlevel); }, 250);
 }
 
+// Sets the sudoku to the one specified with the string 'ret_sud'.
+function set_sud_from_str(ret_sud) {
+
+    $("#newGrid").popup("close");
+    $("#waiting").popup("open")
+
+    let s_and_sol_str = ret_sud.substr(13, 324);
+    let s_str = s_and_sol_str.substr(0, 162);
+    let s_sol_str = s_and_sol_str.substr(162, 162);
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            let tot_ind_t2 = 2 * (i * 9 + j);
+            let e_s = parseInt(s_str.substr(tot_ind_t2, 2));
+            let e_sol = parseInt(s_sol_str.substring(tot_ind_t2, 2));
+            console.log("fuck" + tot_ind_t2.toString() + ": '" + s_str.substr(tot_ind_t2, 2) + "'");
+            T[i][j] = e_s;
+            Tsol[i][j] = e_sol;
+        }
+    }
+
+    Tinit = deepCopy2D(T);
+
+    if (!sol_available) sol_available = true;
+    updateGrid();
+    setClickableTrefT();
+    hyp = false;
+    $("#waiting").popup("close")
+}
+
+// Reads a random sudoku from the file and loads it.
 function loadRandomSud(lvl = 7) {
 
     console.log("Trying to load fucking file");
-    console.log("Trying to load fucking file");
-    console.log("WTF is this??");
-    var items;
-    $.get("./data/ext_lvl_7.txt", function (data) {
-        items = data.split('\n');
-    });
-    var n_s = items.length;
-    console.log(n_s);
-    console.log("Finished loading file");
-
+    var f_name = "./data/ext_lvl_" + lvl.toString() + ".txt";
+    console.log(f_name);
+    fetch(f_name)
+        .then(response => response.text())
+        .then((data) => {
+            var items = data.split("\n");
+            var n_s = items.length;
+            let s_ind = Math.floor(Math.random() * n_s);
+            let sud_str = items[s_ind];
+            console.log(sud_str);
+            set_sud_from_str(sud_str);            
+            console.log("Fuckkkk");
+        })
 }
 
 function solve() {
@@ -754,6 +787,7 @@ function solve() {
     //document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color="#B8B8B8";
 }
+
 // Checks if any input digits are wrong and sets their background to
 // red.
 function check() {
@@ -769,11 +803,8 @@ function check() {
     }
 }
 
-
-
 // The above sudoku generator sucks, so this is my own (work in progress)
 // This one does not work well though.
-
 
 function getSum(a, b) {
     return a + b;
