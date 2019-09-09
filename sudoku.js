@@ -4,6 +4,12 @@ var Tsol = Array.from(new Array(9), () => new Array(9).fill(0));
 var Tinit = Array.from(new Array(9), () => new Array(9));
 var digits = new Array(10);
 
+// 0: Normal
+// 1: Wrong (checked)
+// 2: Current Hypothesis
+// 3: Current Hypothesis Wrong (checked)
+var Marked = Array.from(new Array(9), () => new Array(9).fill(0));
+
 // Hypotheses
 var hyps = [];
 var choosingHyp = false;
@@ -35,7 +41,8 @@ var sameDigCol = "#FBB";
 var hypCol = "#0C5";
 var lightH = "#FDD";
 var normH = "#BBB";
-var wrongCol = "#F00"
+var wrongCol = "#F00";
+var wrongHypCol = "#B00";
 
 // Appends the string: log as a new line to the log for debugging.
 function log(str) {
@@ -133,6 +140,9 @@ function setCell(y, x, n, largeMode = true, highlightCells = false) {
         Tref[y][x].appendChild(TsubHTMLTables[y][x]);
         for (i = 0; i < 9; i++) {
             resetMiniCell(y, x, i + 1);
+        }
+        if (Marked[y][x] > 0) {
+            Marked[y][x] = 0;
         }
     }
     else {
@@ -521,6 +531,7 @@ function clickCell(cell) {
                         setClickableTrefT();
                         T[y][x] = v;
                         Tref[y][x].style.color = hypCol;
+                        Marked[y][x] = 2;
                         Tref[y][x].setAttribute("clickable", 0);
                         setCell(y, x, v, large, true);
                         finishedHypChoosing();
@@ -615,6 +626,8 @@ function hypothesis3() {
         // TODO: Prev. Hyp
         var y = hyps[nHyps - 2][0][0], x = hyps[nHyps - 2][0][1];
         Tref[y][x].style.color = hypCol;
+        Marked[y][x] = 3;
+        Marked[lastHyp[0][0]][lastHyp[0][1]] = 0;
         Tref[y][x].setAttribute("clickable", 0);
     }
     // Current uncertain digits
@@ -801,7 +814,16 @@ function check() {
             let tot_ind = i * 9 + j;
             if ((T[i][j] != Tsol[i][j]) && (T[i][j] != 0)) {
                 console.log(tot_ind.toString() + " is " + Tsol[i][j].toString());
-                Tref[i][j].style.color = wrongCol;
+                let curr_mar = Marked[i][j]
+                console.log(curr_mar)
+                if (curr_mar == 2) {
+                    Tref[i][j].style.color = wrongHypCol;
+                    Marked[i][j] = 3;
+                    console.log("your fucking hypothesis is wrong");
+                } else {
+                    Tref[i][j].style.color = wrongCol;
+                    Marked[i][j] = 1;
+                }
             }
         }
     }
