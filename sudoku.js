@@ -35,6 +35,7 @@ var sameDigCol = "#FBB";
 var hypCol = "#0C5";
 var lightH = "#FDD";
 var normH = "#BBB";
+var wrongCol = "#F00"
 
 // Appends the string: log as a new line to the log for debugging.
 function log(str) {
@@ -731,7 +732,7 @@ function set_sud_from_str(ret_sud) {
         for (j = 0; j < 9; j++) {
             let tot_ind_t2 = 2 * (i * 9 + j);
             let e_s = parseInt(s_str.substr(tot_ind_t2, 2));
-            let e_sol = parseInt(s_sol_str.substring(tot_ind_t2, 2));
+            let e_sol = parseInt(s_sol_str.substr(tot_ind_t2, 2));
             console.log("fuck" + tot_ind_t2.toString() + ": '" + s_str.substr(tot_ind_t2, 2) + "'");
             T[i][j] = e_s;
             Tsol[i][j] = e_sol;
@@ -739,7 +740,6 @@ function set_sud_from_str(ret_sud) {
     }
 
     Tinit = deepCopy2D(T);
-
     if (!sol_available) sol_available = true;
     updateGrid();
     setClickableTrefT();
@@ -756,7 +756,6 @@ function loadRandomSud(lvl = 7) {
 
     console.log("Trying to load fucking file");
     var f_name = "./data/ext_lvl_" + lvl.toString() + ".txt";
-    console.log(f_name);
     fetch(f_name)
         .then(response => response.text())
         .then((data) => {
@@ -765,7 +764,7 @@ function loadRandomSud(lvl = 7) {
             let s_ind = Math.floor(Math.random() * n_s);
             let sud_str = items[s_ind];
             console.log(sud_str);
-            set_sud_from_str(sud_str);            
+            set_sud_from_str(sud_str);
             console.log("Fuckkkk");
         })
 }
@@ -796,12 +795,13 @@ function solve() {
 // red.
 function check() {
     if (sol_available == false) return;
-    log("Checking Sudoku: ");
+    console.log("Checking Sudoku: ");
     for(i=0;i<9;i++) {
-        for(j=0;j<9;j++) {
-            if ((T[i][j] != Tsol[i][j])&&(T[i][j] != 0)) {
-                Tref[i][j].style.backgroundColor = "#FBB";
-                log("i = " + i.toString() + ", j = " + j.toString() + " set to #FBB in check()");
+        for (j = 0; j < 9; j++) {
+            let tot_ind = i * 9 + j;
+            if ((T[i][j] != Tsol[i][j]) && (T[i][j] != 0)) {
+                console.log(tot_ind.toString() + " is " + Tsol[i][j].toString());
+                Tref[i][j].style.color = wrongCol;
             }
         }
     }
