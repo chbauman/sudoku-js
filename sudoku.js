@@ -547,6 +547,26 @@ function checkSolvedSud() {
     if (!slvd) {
         return;
     }
+    let vid_src = "./gifs/gj.mp4";
+    let title = "You solved it!! :)"
+    if (sudLvl == -2) {
+        vid_src = "./gifs/uncivilized.mp4";
+        title = "You used the solver :(";
+    } else if (sudLvl == -1) {
+        vid_src = "./gifs/thumbs_up.mp4";
+        title = "You solved your own sudoku.";
+    } else if (sudLvl == 0) {
+        vid_src = "./gifs/yoda_fear.mp4";
+        title = "Do not fear the harder ones.";
+    } else if (sudLvl < 5) {
+        vid_src = "./gifs/good.mp4";
+        title = "Now try another one.";
+    } else if (sudLvl == 8) {
+        vid_src = "./gifs/unlim_power.mp4";
+        title = "Nothing you can't solve.";
+    }
+    document.getElementById("fin-vid").src = vid_src;
+    document.getElementById("solved-h").src = title;
     $("#win").popup("open");
     console.log(sudLvl);
 }
@@ -779,6 +799,7 @@ function loadRandomSud(lvl = 7) {
 
 function solve() {
     if (sol_available == false) return;
+    sudLvl = -2;
     for(i=0;i<9;i++) {
         for(j=0;j<9;j++) {
             if (T[i][j]==0) {
