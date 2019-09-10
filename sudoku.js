@@ -9,6 +9,7 @@ var digits = new Array(10);
 // 2: Current Hypothesis
 // 3: Current Hypothesis Wrong (checked)
 var Marked = Array.from(new Array(9), () => new Array(9).fill(0));
+var sudLvl;
 
 // Hypotheses
 var hyps = [];
@@ -292,10 +293,9 @@ function permuteSuds(s, s_sol, n = 5) {
     }
 }
 
-
 // Initializing function
 function init() {
-
+    
     //solveSudoku(testHard);
     var i, j, k;
     var tbl = document.getElementById("grid");
@@ -418,6 +418,7 @@ function elsewhere() {
 }
 
 function fillSmallDigits() {
+    
     var i, j, k;
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
@@ -502,6 +503,7 @@ function clickCell(cell) {
                             Tref[y][x].style.color = col1;
                         }
                         setCell(y, x, v, large, true);
+                        checkSolvedSud();
                     });
                 } else {
                     $("#digits").on("click", "#digit-" + String(i), function (e) {
@@ -518,6 +520,7 @@ function clickCell(cell) {
                         setCell(y, x, v, large, true);
                         finishedHypChoosing();
                         enableHypRejection();
+                        checkSolvedSud();
                         log("Saved current.");
                     });
                 }
@@ -537,6 +540,15 @@ function clickCell(cell) {
         }
         elsewhere();
     }
+}
+
+function checkSolvedSud() {
+    let slvd = checkSolved(T);
+    if (!slvd) {
+        return;
+    }
+    $("#win").popup("open");
+    console.log(sudLvl);
 }
 
 // Enable shrink mode 
@@ -577,6 +589,7 @@ function enableSmallDigs() {
 
 // Start choosing hypothesis digit
 function hypothesis1() {
+    
     if (!choosingHyp) {
         // Choose hypothesis digit
         disableSmallDigs()
@@ -639,8 +652,8 @@ function hypothesis3() {
     }
 }
 
-function input_own_sudoku() {
-    
+function input_own_sudoku() {   
+
     if (!inputtingOwnSud) {
         log("Own Input")
 
@@ -665,6 +678,7 @@ function input_own_sudoku() {
 
     } else {
         log("Done inputting own sudoku!")
+        sudLvl = -1;
 
         // Toggle State
         inputtingOwnSud = false;
@@ -709,10 +723,6 @@ function restart() {
     document.getElementById("but3").style.color="#B8B8B8";
 
 }
-function newRandomGrid(nlevel) {    
-    $( "#newGrid" ).popup( "close" );
-    setTimeout(function() { getRandomGrid(nlevel); }, 250);
-}
 
 // Sets the sudoku to the one specified with the string 'ret_sud'.
 function set_sud_from_str(ret_sud) {
@@ -728,7 +738,6 @@ function set_sud_from_str(ret_sud) {
             let tot_ind_t2 = 2 * (i * 9 + j);
             let e_s = parseInt(s_str.substr(tot_ind_t2, 2));
             let e_sol = parseInt(s_sol_str.substr(tot_ind_t2, 2));
-            console.log("fuck" + tot_ind_t2.toString() + ": '" + s_str.substr(tot_ind_t2, 2) + "'");
             T[i][j] = e_s;
             Tsol[i][j] = e_sol;
         }
@@ -751,6 +760,7 @@ function loadRandomSud(lvl = 7) {
     if (inputtingOwnSud) {
         input_own_sudoku();
     }
+    sudLvl = lvl; 
 
     console.log("Trying to load fucking file");
     var f_name = "./data/ext_lvl_" + lvl.toString() + ".txt";
