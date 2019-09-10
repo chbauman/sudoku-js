@@ -187,6 +187,111 @@ function deepCopy3D(arr) {
     }
     return newArr;
 }
+function range(n) {
+    let arr = new Array(n);
+    for (i = 0; i < n; ++i) {
+        arr[i] = i;
+    }
+    return arr;
+}
+
+// Shuffle
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function permuteSuds(s, s_sol, n = 5) {
+
+    // Permute digits
+    let num_per = range(9);
+    shuffle(num_per);
+    for (i = 0; i < 9; ++i) {
+        for (k = 0; k < 9; ++k) {
+            let val = s_sol[i][k];
+            let val_new = num_per[val - 1] + 1;
+            s_sol[i][k] = val_new;
+            if (s[i][k] != 0) {
+                s[i][k] = val_new
+            }
+        }
+    }
+
+    // Make copy
+    let sol_copy;
+    let s_copy;
+
+    // New Permutation
+    let per3 = range(3);
+    
+    let n_shuff;
+    for (n_shuff = 0; n_shuff < n; ++n_shuff) {
+
+        // Copy again
+        sol_copy = deepCopy2D(s_sol);
+        s_copy = deepCopy2D(s);
+
+        // Permute rows
+        for (k = 0; k < 3; ++k) {
+            shuffle(per3);
+            let offs = k * 3;
+            for (i = 0; i < 3; ++i) {
+                s_sol[offs + i] = sol_copy[offs + per3[i]].slice();
+                s[offs + i] = s_copy[offs + per3[i]].slice();
+            }
+        }
+        // Copy again
+        sol_copy = deepCopy2D(s_sol);
+        s_copy = deepCopy2D(s);
+
+        // Permute cols
+        for (k = 0; k < 3; ++k) {
+            shuffle(per3);
+            let offs = k * 3;
+            for (i = 0; i < 3; ++i) {
+                for (j = 0; j < 9; ++j) {
+                    s_sol[j][offs + i] = sol_copy[j][offs + per3[i]];
+                    s[j][offs + i] = s_copy[j][offs + per3[i]];
+                }
+            }
+        }
+
+        // Copy again
+        sol_copy = deepCopy2D(s_sol);
+        s_copy = deepCopy2D(s);
+
+        // Permute rows of squares
+        shuffle(per3);
+        for (k = 0; k < 3; ++k) {
+            let offs = per3[k] * 3;
+            let offs_k = k * 3;
+            for (i = 0; i < 3; ++i) {
+                s_sol[offs_k + i] = sol_copy[offs + i].slice();
+                s[offs_k + i] = s_copy[offs + i].slice();
+            }
+        }
+
+        // Copy again
+        sol_copy = deepCopy2D(s_sol);
+        s_copy = deepCopy2D(s);
+
+        // Permute cols of squares
+        shuffle(per3);
+        for (k = 0; k < 3; ++k) {
+            let offs = per3[k] * 3;
+            let offs_k = k * 3;
+            for (i = 0; i < 3; ++i) {
+                for (j = 0; j < 9; ++j) {
+                    s_sol[j][offs_k + i] = sol_copy[j][offs + i];
+                    s[j][offs_k + i] = s_copy[j][offs + i];
+                }
+            }
+        }
+    }
+}
+
 
 // Initializing function
 function init() {
@@ -256,7 +361,7 @@ function init() {
     //document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color = "#B8B8B8";
 
-    setTimeout(function () { getRandomGrid(96); }, 250);
+    setTimeout(function () { loadRandomSud(4); }, 250);
 
     document.getElementById("digits").style.display = "inline-block";
     document.getElementById("buttons1").style.display = "none";
@@ -292,110 +397,6 @@ function allowed(A, y, x) {
     return res;
 }
 
-function bestHypothesis(A) {
-    var i,j,s;
-    var bSc = 10;
-    var bCoords = [9,9];
-    var bAll = [];
-    for(i=0;i<9;i++) {
-        for(j=0;j<9;j++) {
-            if (A[i][j] == 0) {
-                s = allowed(A, i,j);
-                n = s.length;
-                if (n<bSc) {
-                    bSc = n;
-                    bCoords = [i,j];
-                    bAll = s;
-                }
-            }
-        }
-    }
-    return [ bAll, bCoords[0], bCoords[1] ];
-}
-
-function _findAcceptableGrid() {
-    var i;
-    var [all, y, x] = bestHypothesis(T);
-    if (y==9) return true;
-    if (all.length==0) return false; // invalid grid
-    all = shuffle(all);
-    for (i=0;i<all.length;i++) {
-        T[y][x] = all[i];
-        if(_findAcceptableGrid()) return true;
-    }
-}
-function findAcceptableGrid() {
-    var i,j;
-    for(i=0;i<9;i++) { for(j=0;j<9;j++) T[i][j] = 0; }
-    while(_findAcceptableGrid() != true) {
-        for(i=0;i<9;i++) { for(j=0;j<9;j++) T[i][j] = 0; }
-    }
-    for(i=0;i<9;i++) { for(j=0;j<9;j++) Tsol[i][j] = T[i][j]; }
-}
-
-function _findValidityClass(A, n) {
-    var i;
-    var sol = -1;
-    var [all, y, x] = bestHypothesis(A);
-    if (y==9) return 1;
-    if (all.length==0) return -1; // invalid grid
-    // if (all.length > 1) n++; // make a new hypothesis
-    for (i=0;i<all.length;i++) {
-        A[y][x] = all[i];
-        r = _findValidityClass(A, n);
-        A[y][x] = 0;
-        if (r >= 0) {
-            if (sol >= 0) return -2; // at least two solutions exist
-            // sol = r;
-            sol = all.length * r;
-        } else if (r==-2) return -2;
-    }
-    return sol;
-}
-
-function _getRandomGrid2(nlevel) {
-    var i, j, v, y1, x1, y2, x2, s;
-    var sc = -2;
-    var zeros = [];
-    var kept = [];
-    for(i=0;i<9;i++) { for(j=0;j<9;j++) kept.push([i,j]); }
-    findAcceptableGrid();
-    for(i=0;i<nlevel;i++) {
-        j = Math.floor(Math.random() * kept.length);
-        y1 = kept[j][0]; x1 = kept[j][1];
-        T[y1][x1] = 0;
-        v = _findValidityClass(T, 0);
-        if(v < 0) T[y1][x1] = Tsol[y1][x1];
-        else {
-            sc = v; zeros.push([y1,x1]);
-            kept[j] = kept[kept.length-1]; kept.pop();
-        }
-        j = Math.floor(Math.random() * kept.length);
-        y1 = kept[j][0]; x1 = kept[j][1];
-        s = Math.floor(Math.random() * zeros.length);
-        y2 = zeros[s][0]; x2 = zeros[s][1];
-        T[y1][x1] = 0; T[y2][x2] = Tsol[y2][x2];
-        v = _findValidityClass(T, 0);
-        if(v < sc)
-            {
-                T[y1][x1] = Tsol[y1][x1];
-                T[y2][x2] = 0;
-            }
-        else {
-            sc = v;
-            zeros[s] = [y1, x1];
-            kept[j] = [y2, x2];
-        }
-    }
-
-    // Copy it to Tinit
-    Tinit = deepCopy2D(T);
-    for (i = 0; i < 9; i++) {
-        log("T = " + T[0][i].toString() + ", Tinit = " + Tinit[0][i].toString());
-    }   
-    return sc;
-}
-
 function setClickableTrefT() {    
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
@@ -406,25 +407,6 @@ function setClickableTrefT() {
             }
         }
     }
-}
-
-function _getRandomGrid(nlevel) {
-    console.log(_getRandomGrid2(nlevel));
-    updateGrid();
-    setClickableTrefT();
-    // make clickable
-    $( "#waiting" ).popup( "close" )
-    //$.mobile.loading().hide();
-    hyp = false;
-    document.getElementById("but1").style.color="#000";
-    //document.getElementById("but2").style.color="#B8B8B8";
-    document.getElementById("but3").style.color="#B8B8B8";
-}
-function getRandomGrid(nlevel) {
-    $("#waiting").popup("open")
-    if (!sol_available) sol_available = true;
-    //$.mobile.loading().show();
-    setTimeout(function() { _getRandomGrid(nlevel); }, 0);
 }
 
 function elsewhere() {
@@ -751,6 +733,9 @@ function set_sud_from_str(ret_sud) {
             Tsol[i][j] = e_sol;
         }
     }
+
+    // Shuffle
+    permuteSuds(T, Tsol);
 
     Tinit = deepCopy2D(T);
     if (!sol_available) sol_available = true;
