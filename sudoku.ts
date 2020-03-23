@@ -1,3 +1,7 @@
+export module Sudoku {
+  export const foo = Math.sqrt(2);
+}
+
 var T: number[][] = Array.from(new Array(9), () => new Array(9).fill(0));
 var Tref: number[][] = Array.from(new Array(9), () => new Array(9));
 var Tsol: number[][] = Array.from(new Array(9), () => new Array(9).fill(0));

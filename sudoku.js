@@ -1,3 +1,8 @@
+
+export function sayHi(user) {
+    alert(`Hello, ${user}!`);
+  }  // no ; at the end
+
 var T = Array.from(new Array(9), function () { return new Array(9).fill(0); });
 var Tref = Array.from(new Array(9), function () { return new Array(9); });
 var Tsol = Array.from(new Array(9), function () { return new Array(9).fill(0); });
@@ -108,14 +113,14 @@ function toggleMiniCell(y, x, n) {
 // (y, x) to n.
 function eliminateSmallDigs(y, x, n) {
     var i;
-    var xFloor = x - x % 3;
-    var yFloor = y - y % 3;
+    var xFloor = x - (x % 3);
+    var yFloor = y - (y % 3);
     for (i = 0; i < 9; i++) {
         // Rows and Cols
         resetMiniCell(y, i, n);
         resetMiniCell(i, x, n);
         // Square
-        resetMiniCell(yFloor + i % 3, xFloor + parseInt(i / 3), n);
+        resetMiniCell(yFloor + (i % 3), xFloor + parseInt(i / 3), n);
     }
 }
 // Set cell (y, x) with value n (0 for empty cell)
@@ -152,8 +157,8 @@ function updateGrid() {
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
             setCell(i, j, T[i][j], true, false);
-            Tref[i][j].style.color = '';
-            Tref[i][j].style.backgroundColor = '';
+            Tref[i][j].style.color = "";
+            Tref[i][j].style.backgroundColor = "";
         }
     }
 }
@@ -326,16 +331,18 @@ function init() {
     for (i = 0; i < 10; i++)
         digits[i] = document.getElementById("digit-" + String(i));
     // Buttons
-    i = $('#digits').height();
-    j = $('#buttons1').height();
+    i = $("#digits").height();
+    j = $("#buttons1").height();
     j = Math.floor((i - j) / 2) + 4;
-    $('#buttons1').height(i - j);
-    $('#buttons1').css("margin-top", String(j) + "px");
+    $("#buttons1").height(i - j);
+    $("#buttons1").css("margin-top", String(j) + "px");
     document.getElementById("digits").style.display = "none";
     document.getElementById("but1").style.color = "#000";
     //document.getElementById("but2").style.color="#B8B8B8";
     document.getElementById("but3").style.color = "#B8B8B8";
-    setTimeout(function () { loadRandomSud(4); }, 250);
+    setTimeout(function () {
+        loadRandomSud(4);
+    }, 250);
     document.getElementById("digits").style.display = "inline-block";
     document.getElementById("buttons1").style.display = "none";
     // Remove log if not debugging
@@ -375,7 +382,7 @@ function setClickableTrefT() {
                 Tref[i][j].setAttribute("clickable", 1);
             else {
                 Tref[i][j].setAttribute("clickable", 0);
-                Tref[i][j].style.color = '';
+                Tref[i][j].style.color = "";
             }
         }
     }
@@ -407,12 +414,12 @@ function highlight(y, x) {
     log("highlighting");
     var currDig = T[y][x];
     var i, j;
-    var xFloor = x - x % 3;
-    var yFloor = y - y % 3;
+    var xFloor = x - (x % 3);
+    var yFloor = y - (y % 3);
     for (i = 0; i < 9; i++) {
         Tref[y][i].style.backgroundColor = rowColSquareForbidCol;
         Tref[i][x].style.backgroundColor = rowColSquareForbidCol;
-        Tref[yFloor + i % 3][xFloor + parseInt(i / 3)].style.backgroundColor = rowColSquareForbidCol;
+        Tref[yFloor + (i % 3)][xFloor + parseInt(i / 3)].style.backgroundColor = rowColSquareForbidCol;
         for (j = 0; j < 9; j++) {
             if (T[i][j] == currDig) {
                 Tref[i][j].style.backgroundColor = sameDigCol;
@@ -443,13 +450,21 @@ function clickCell(cell) {
     if (c == 1) {
         if (false && curX >= 0) {
             Tref[curY][curX].style.backgroundColor = "";
-            log("i = " + curY.toString() + ", j = " + curX.toString() + " set to \"\" in clickCell()");
+            log("i = " +
+                curY.toString() +
+                ", j = " +
+                curX.toString() +
+                ' set to "" in clickCell()');
         }
         $("#digits").off("click", "**");
         curY = y;
         curX = x;
         cell.style.backgroundColor = "#BBB";
-        log("i = " + curY.toString() + ", j = " + curX.toString() + " set to #BBB in clickCell()");
+        log("i = " +
+            curY.toString() +
+            ", j = " +
+            curX.toString() +
+            " set to #BBB in clickCell()");
         log("chH in clickCell: " + choosingHyp.toString());
         // Enable all digits that are admissible
         var a = allowed(T, y, x);
@@ -544,7 +559,7 @@ function checkSolvedSud() {
     $("#win").popup("open");
     console.log(sudLvl);
 }
-// Enable shrink mode 
+// Enable shrink mode
 function finishedHypChoosing() {
     if (choosingHyp == false)
         return;
@@ -658,8 +673,8 @@ function input_own_sudoku() {
             for (j = 0; j < 9; j++) {
                 T[i][j] = 0;
                 setCell(i, j, 0, true, false);
-                Tref[i][j].style.color = '';
-                Tref[i][j].style.backgroundColor = '';
+                Tref[i][j].style.color = "";
+                Tref[i][j].style.backgroundColor = "";
                 Tref[i][j].setAttribute("clickable", 1);
             }
         }
@@ -788,7 +803,7 @@ function check() {
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
             var tot_ind = i * 9 + j;
-            if ((T[i][j] != Tsol[i][j]) && (T[i][j] != 0)) {
+            if (T[i][j] != Tsol[i][j] && T[i][j] != 0) {
                 console.log(tot_ind.toString() + " is " + Tsol[i][j].toString());
                 var curr_mar = Marked[i][j];
                 console.log(curr_mar);
@@ -855,7 +870,7 @@ function uniquePlaceInCol(sud, adm) {
         for (n = 0; n < 9; n++) {
             colOcc = 0;
             colOccPos = 0;
-            // For each cell in i      
+            // For each cell in i
             for (j = 0; j < 9; j++) {
                 // Cols
                 if (sud[i][j] == n + 1) {
@@ -903,7 +918,7 @@ function uniquePlaceInRow(sud, adm) {
         for (n = 0; n < 9; n++) {
             colOcc = 0;
             colOccPos = 0;
-            // For each cell in i      
+            // For each cell in i
             for (j = 0; j < 9; j++) {
                 // Cols
                 if (sud[j][i] == n + 1) {
@@ -943,7 +958,7 @@ function uniquePlaceInSquare(sud, adm) {
         for (n = 0; n < 9; n++) {
             colOcc = 0;
             colOccPos = 0;
-            // For each cell in i      
+            // For each cell in i
             for (j = 0; j < 9; j++) {
                 jx = j % 3;
                 jy = Math.floor(j / 3);
@@ -1061,7 +1076,7 @@ function solveSudokuWithRecursiveGuessing(sud, admisArray) {
             }
         }
     }
-    // Find all possible digits at that position    
+    // Find all possible digits at that position
     var admXY = admisArray[x][y];
     var admDigs = [];
     for (i = 0; i < 9; i++) {
