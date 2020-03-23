@@ -15,3 +15,13 @@ and is specifically designed to be unsolvable to all but the sharpest minds.](ht
 
 Built upon simpler version found here: (https://github.com/baruchel/sudoku-js)
 
+## Development
+
+To test the website locally, one possibility is to 
+use `http-server` with `node.js`:
+
+```
+$ http-server
+```
+
+And then go to `http://localhost:8080/index.html`.
